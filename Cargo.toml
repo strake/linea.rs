@@ -4,6 +4,8 @@ version = "0.1.1"
 authors = ["M Farkas-Dyck <strake888@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "Linear Algebra: Vectors and Matrices"
+repository = "https://github.com/strake/linea.rs"
+documentation = "http://rustdoc.strake.me.uk/linea/index.html"
 
 [dependencies]
 typenum = { version = "1.3.*", features = ["no_std"] }
