@@ -2,6 +2,7 @@
 name = "linea"
 version = "0.1.0"
 authors = ["M Farkas-Dyck <strake888@gmail.com>"]
+description = "Linear Algebra: Vectors and Matrices"
 
 [dependencies]
 typenum = { version = "1.3.*", features = ["no_std"] }
