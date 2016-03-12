@@ -18,102 +18,16 @@ use core::num::*;
 use core::ops::*;
 use core::ptr;
 use generic_array::*;
+use typenum::consts::U1;
 
-pub struct Vector<A, N: ArrayLength<A>>(GenericArray<A, N>);
-
-impl<A, N: ArrayLength<A>> Vector<A, N> {
-    #[inline] pub fn from_array(a: GenericArray<A, N>) -> Self { Vector(a) }
-    #[inline] pub fn to_array(self) -> GenericArray<A, N> { let Vector(a) = self; a }
-}
-
-impl<A: Clone, N: ArrayLength<A>> Clone for Vector<A, N> where N::ArrayType: Clone {
-    fn clone(&self) -> Self {
-        let &Vector(ref a) = self;
-        unsafe {
-            let mut c: GenericArray<A, N> = mem::uninitialized();
-            for i in 0..N::to_usize() { ptr::write(&mut c[i], a[i].clone()) }
-            Vector(c)
-        }
-    }
-}
-
-impl<A: Copy, N: ArrayLength<A>> Copy for Vector<A, N> where N::ArrayType: Copy {}
+pub struct Matrix<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>> = U1>(GenericArray<GenericArray<A, M>, N>);
 
 #[inline]
-pub fn dot<B: Copy, A: Copy + Mul<B>, N: ArrayLength<A> + ArrayLength<B>>(Vector(a): Vector<A, N>, Vector(b): Vector<B, N>) -> A::Output where A::Output: Zero + AddAssign {
+pub fn dot<B: Copy, A: Copy + Mul<B>, N: ArrayLength<A> + ArrayLength<B>>(Matrix(a): Matrix<A, N>, Matrix(b): Matrix<B, N>) -> A::Output where A::Output: Zero + AddAssign {
     let mut c = A::Output::zero();
-    for i in 0..N::to_usize() { c += a[i]*b[i] }
+    for i in 0..N::to_usize() { c += a[0][i]*b[0][i] }
     c
 }
-
-impl<A: Copy, N: ArrayLength<A>> Vector<A, N> {
-    #[inline]
-    pub fn scalar_mul<B: Copy + Mul<A>>(self, b: B) -> Vector<B::Output, N> where N: ArrayLength<B> + ArrayLength<B::Output> {
-        let Vector(a) = self;
-        let mut c: GenericArray<B::Output, N> = unsafe { mem::uninitialized() };
-        for (p, q) in Iterator::zip(a.iter(), c.iter_mut()) { *q = b**p }
-        Vector(c)
-    }
-}
-
-impl<A: Copy + Zero + AddAssign + One + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Vector<A, N> {
-    #[inline]
-    pub fn norm(self) -> Self where N::ArrayType: Copy { self.scalar_mul(A::one()/dot(self, self)) }
-}
-
-impl<A: Copy + Zero, N: ArrayLength<A>> Zero for Vector<A, N> {
-    fn zero() -> Self {
-        let mut c: GenericArray<A, N> = unsafe { mem::uninitialized() };
-        for i in 0..N::to_usize() { c[i] = A::zero() }
-        Vector(c)
-    }
-}
-
-impl<B: Copy, A: Copy + Add<B>, N: ArrayLength<A> + ArrayLength<B> + ArrayLength<A::Output>> Add<Vector<B, N>> for Vector<A, N> {
-    type Output = Vector<A::Output, N>;
-    fn add(self, Vector(b): Vector<B, N>) -> Self::Output {
-        let Vector(a) = self;
-        let mut c: GenericArray<A::Output, N> = unsafe { mem::uninitialized() };
-        for i in 0..N::to_usize() { c[i] = a[i] + b[i] }
-        Vector(c)
-    }
-}
-
-impl<B: Copy, A: Copy + AddAssign<B>, N: ArrayLength<A> + ArrayLength<B>> AddAssign<Vector<B, N>> for Vector<A, N> {
-    fn add_assign(&mut self, Vector(b): Vector<B, N>) {
-        let &mut Vector(ref mut a) = self;
-        for i in 0..N::to_usize() { a[i] += b[i] }
-    }
-}
-
-impl<A: Copy + Neg, N : ArrayLength<A> + ArrayLength<A::Output>> Neg for Vector<A, N> {
-    type Output = Vector<A::Output, N>;
-    fn neg(self) -> Self::Output {
-        let Vector(a) = self;
-        let mut c: GenericArray<A::Output, N> = unsafe { mem::uninitialized() };
-        for i in 0..N::to_usize() { c[i] = a[i].neg() }
-        Vector(c)
-    }
-}
-
-impl<B: Copy, A: Copy + Sub<B>, N: ArrayLength<A> + ArrayLength<B> + ArrayLength<A::Output>> Sub<Vector<B, N>> for Vector<A, N> {
-    type Output = Vector<A::Output, N>;
-    fn sub(self, Vector(b): Vector<B, N>) -> Self::Output {
-        let Vector(a) = self;
-        let mut c: GenericArray<A::Output, N> = unsafe { mem::uninitialized() };
-        for i in 0..N::to_usize() { c[i] = a[i] - b[i] }
-        Vector(c)
-    }
-}
-
-impl<B: Copy, A: Copy + SubAssign<B>, N: ArrayLength<A> + ArrayLength<B>> SubAssign<Vector<B, N>> for Vector<A, N> {
-    fn sub_assign(&mut self, Vector(b): Vector<B, N>) {
-        let &mut Vector(ref mut a) = self;
-        for i in 0..N::to_usize() { a[i] -= b[i] }
-    }
-}
-
-pub struct Matrix<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>>(GenericArray<GenericArray<A, M>, N>);
 
 impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLength<A> + ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }

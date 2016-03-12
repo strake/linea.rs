@@ -11,12 +11,12 @@ macro_rules! impl_AsUniformValue {
          })
 }
 
-impl_AsUniformValue!(Vector<f32, U2>, [f32; 2]);
-impl_AsUniformValue!(Vector<f32, U3>, [f32; 3]);
-impl_AsUniformValue!(Vector<f32, U4>, [f32; 4]);
-impl_AsUniformValue!(Vector<f64, U2>, [f32; 2]);
-impl_AsUniformValue!(Vector<f64, U3>, [f32; 3]);
-impl_AsUniformValue!(Vector<f64, U4>, [f32; 4]);
+impl_AsUniformValue!(Matrix<f32, U2, U1>, [f32; 2]);
+impl_AsUniformValue!(Matrix<f32, U3, U1>, [f32; 3]);
+impl_AsUniformValue!(Matrix<f32, U4, U1>, [f32; 4]);
+impl_AsUniformValue!(Matrix<f64, U2, U1>, [f32; 2]);
+impl_AsUniformValue!(Matrix<f64, U3, U1>, [f32; 3]);
+impl_AsUniformValue!(Matrix<f64, U4, U1>, [f32; 4]);
 impl_AsUniformValue!(Matrix<f32, U2, U2>, [[f32; 2]; 2]);
 impl_AsUniformValue!(Matrix<f32, U3, U3>, [[f32; 3]; 3]);
 impl_AsUniformValue!(Matrix<f32, U4, U4>, [[f32; 4]; 4]);
