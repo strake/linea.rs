@@ -5,6 +5,14 @@
 extern crate generic_array;
 extern crate typenum;
 
+#[cfg(feature = "glium")]
+extern crate glium;
+
+#[cfg(feature = "glium")]
+mod linea_glium;
+#[cfg(feature = "glium")]
+pub use linea_glium::*;
+
 use core::mem;
 use core::num::*;
 use core::ops::*;
