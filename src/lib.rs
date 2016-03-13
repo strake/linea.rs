@@ -29,6 +29,15 @@ pub fn dot<B: Copy, A: Copy + Mul<B>, N: ArrayLength<A> + ArrayLength<B>>(Matrix
     c
 }
 
+impl<A, N: ArrayLength<A>> Index<usize> for Matrix<A, N> {
+    type Output = A;
+    fn index(&self, i: usize) -> &A { let &Matrix(ref a) = self; &a[0][i] }
+}
+
+impl<A, N: ArrayLength<A>> IndexMut<usize> for Matrix<A, N> {
+    fn index_mut(&mut self, i: usize) -> &mut A { let &mut Matrix(ref mut a) = self; &mut a[0][i] }
+}
+
 impl<A: Copy + Zero + AddAssign + One + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> {
     #[inline]
     pub fn norm(self) -> Self where N::ArrayType: Copy { self.scalar_mul(A::one()/dot(self, self)) }
