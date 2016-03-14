@@ -57,9 +57,12 @@ impl<A: Copy + Zero + AddAssign + Sub<Output = A> + Mul<Output = A> + Div<Output
     pub fn rej(self, other: Self) -> Self { other - self.proj(other) }
 }
 
-impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLength<A> + ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
+impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
     #[inline] pub fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { let Matrix(a) = self; a }
+}
+
+impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLength<A> + ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub fn transpose(self) -> Matrix<A, N, M> {
         let Matrix(a) = self;
         let mut c: GenericArray<GenericArray<A, N>, M> = unsafe { mem::uninitialized() };
