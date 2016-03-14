@@ -40,7 +40,7 @@ impl<A, N: ArrayLength<A>> IndexMut<usize> for Matrix<A, N> {
 
 impl<A: Copy + Zero + AddAssign + One + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> {
     #[inline]
-    pub fn norm(self) -> Self where N::ArrayType: Copy { self.scalar_mul(A::one()/dot(self, self)) }
+    pub fn norm(self) -> Self where N::ArrayType: Copy { self.scale(A::one()/dot(self, self)) }
 }
 
 impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLength<A> + ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
@@ -73,7 +73,7 @@ impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Copy for Ma
 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline]
-    pub fn scalar_mul<B: Copy + Mul<A>>(self, b: B) -> Matrix<B::Output, M, N> where M: ArrayLength<B> + ArrayLength<B::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<B::Output, M>> {
+    pub fn scale<B: Copy + Mul<A>>(self, b: B) -> Matrix<B::Output, M, N> where M: ArrayLength<B> + ArrayLength<B::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<B::Output, M>> {
         let Matrix(a) = self;
         let mut c: GenericArray<GenericArray<B::Output, M>, N> = unsafe { mem::uninitialized() };
         for (ps, qs) in Iterator::zip(a.iter(), c.iter_mut()) { for (p, q) in Iterator::zip(ps.iter(), qs.iter_mut()) { *q = b**p } }
