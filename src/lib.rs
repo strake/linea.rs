@@ -43,6 +43,16 @@ impl<A: Copy + Zero + AddAssign + One + Mul<Output = A> + Div<Output = A>, N: Ar
     pub fn norm(self) -> Self where N::ArrayType: Copy { self.scale(A::one()/dot(self, self)) }
 }
 
+impl<A: Copy + Zero + AddAssign + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
+    #[inline]
+    pub fn proj(self, other: Self) -> Self { self.scale(dot(other, self)/dot(self, self)) }
+}
+
+impl<A: Copy + Zero + AddAssign + Sub<Output = A> + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
+    #[inline]
+    pub fn rej(self, other: Self) -> Self { other - self.proj(other) }
+}
+
 impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLength<A> + ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
     #[inline] pub fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { let Matrix(a) = self; a }
