@@ -20,6 +20,7 @@ use core::ptr;
 use generic_array::*;
 use typenum::consts::U1;
 
+/// Rank-2 array of elements of size known at build time
 pub struct Matrix<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>> = U1>(GenericArray<GenericArray<A, M>, N>);
 
 #[inline]
@@ -39,16 +40,19 @@ impl<A, N: ArrayLength<A>> IndexMut<usize> for Matrix<A, N> {
 }
 
 impl<A: Copy + Zero + AddAssign + One + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> {
+    /// Normalize.
     #[inline]
     pub fn norm(self) -> Self where N::ArrayType: Copy { self.scale(A::one()/dot(self, self)) }
 }
 
 impl<A: Copy + Zero + AddAssign + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
+    /// Project other onto self.
     #[inline]
     pub fn proj(self, other: Self) -> Self { self.scale(dot(other, self)/dot(self, self)) }
 }
 
 impl<A: Copy + Zero + AddAssign + Sub<Output = A> + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
+    /// Reject other from self.
     #[inline]
     pub fn rej(self, other: Self) -> Self { other - self.proj(other) }
 }
