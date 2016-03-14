@@ -60,6 +60,13 @@ impl<A: Copy + Zero + AddAssign + Sub<Output = A> + Mul<Output = A> + Div<Output
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
     #[inline] pub fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { let Matrix(a) = self; a }
+    #[inline]
+    pub fn scale<B: Copy + Mul<A>>(self, b: B) -> Matrix<B::Output, M, N> where M: ArrayLength<B> + ArrayLength<B::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<B::Output, M>> {
+        let Matrix(a) = self;
+        let mut c: GenericArray<GenericArray<B::Output, M>, N> = unsafe { mem::uninitialized() };
+        for (ps, qs) in Iterator::zip(a.iter(), c.iter_mut()) { for (p, q) in Iterator::zip(ps.iter(), qs.iter_mut()) { *q = b**p } }
+        Matrix(c)
+    }
 }
 
 impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLength<A> + ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
@@ -87,16 +94,6 @@ impl<A: Clone, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Clone for 
 }
 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Copy for Matrix<A, M, N> where M::ArrayType: Copy, N::ArrayType: Copy {}
-
-impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
-    #[inline]
-    pub fn scale<B: Copy + Mul<A>>(self, b: B) -> Matrix<B::Output, M, N> where M: ArrayLength<B> + ArrayLength<B::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<B::Output, M>> {
-        let Matrix(a) = self;
-        let mut c: GenericArray<GenericArray<B::Output, M>, N> = unsafe { mem::uninitialized() };
-        for (ps, qs) in Iterator::zip(a.iter(), c.iter_mut()) { for (p, q) in Iterator::zip(ps.iter(), qs.iter_mut()) { *q = b**p } }
-        Matrix(c)
-    }
-}
 
 impl<B: Copy, A: Copy + MulAssign<B>, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> MulAssign<B> for Matrix<A, M, N> {
     fn mul_assign(&mut self, rhs: B) {
