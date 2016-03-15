@@ -8,6 +8,8 @@ extern crate typenum;
 #[cfg(feature = "glium")]
 extern crate glium;
 
+mod mat;
+
 #[cfg(feature = "glium")]
 mod linea_glium;
 #[cfg(feature = "glium")]
