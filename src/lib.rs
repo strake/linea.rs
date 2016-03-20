@@ -48,15 +48,15 @@ impl<A: Copy + Zero + AddAssign + One + Mul<Output = A> + Div<Output = A>, N: Ar
 }
 
 impl<A: Copy + Zero + AddAssign + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
-    /// Project other onto self.
+    /// Project self onto other.
     #[inline]
-    pub fn proj(self, other: Self) -> Self { self.scale(dot(other, self)/dot(self, self)) }
+    pub fn proj(self, other: Self) -> Self { other.scale(dot(self, other)/dot(other, other)) }
 }
 
 impl<A: Copy + Zero + AddAssign + Sub<Output = A> + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
-    /// Reject other from self.
+    /// Reject self from other.
     #[inline]
-    pub fn rej(self, other: Self) -> Self { other - self.proj(other) }
+    pub fn rej(self, other: Self) -> Self { self - other.proj(self) }
 }
 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
