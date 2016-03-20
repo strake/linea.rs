@@ -34,10 +34,12 @@ pub fn dot<B: Copy, A: Copy + Mul<B>, N: ArrayLength<A> + ArrayLength<B>>(Matrix
 
 impl<A, N: ArrayLength<A>> Index<usize> for Matrix<A, N> {
     type Output = A;
+    #[inline]
     fn index(&self, i: usize) -> &A { &self.0[0][i] }
 }
 
 impl<A, N: ArrayLength<A>> IndexMut<usize> for Matrix<A, N> {
+    #[inline]
     fn index_mut(&mut self, i: usize) -> &mut A { &mut self.0[0][i] }
 }
 
@@ -95,7 +97,7 @@ impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLengt
 }
 
 impl<A: Clone, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Clone for Matrix<A, M, N> where M::ArrayType: Clone {
-    fn clone(&self) -> Self {
+    #[inline] fn clone(&self) -> Self {
         unsafe {
             let mut c: GenericArray<GenericArray<A, M>, N> = mem::uninitialized();
             for i in 0..N::to_usize() { for j in 0..M::to_usize() { ptr::write(&mut c[i][j], self.0[i][j].clone()) } }
@@ -107,14 +109,14 @@ impl<A: Clone, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Clone for 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Copy for Matrix<A, M, N> where M::ArrayType: Copy, N::ArrayType: Copy {}
 
 impl<B: Copy, A: Copy + MulAssign<B>, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> MulAssign<B> for Matrix<A, M, N> {
-    fn mul_assign(&mut self, rhs: B) {
+    #[inline] fn mul_assign(&mut self, rhs: B) {
         let &mut Matrix(ref mut a) = self;
         for i in 0..N::to_usize() { for j in 0..M::to_usize() { a[i][j] *= rhs } }
     }
 }
 
 impl<A: Copy + Zero, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Zero for Matrix<A, M, N> {
-    fn zero() -> Self {
+    #[inline] fn zero() -> Self {
         let mut c: GenericArray<GenericArray<A, M>, N> = unsafe { mem::uninitialized() };
         for i in 0..N::to_usize() { for j in 0..M::to_usize() { c[i][j] = A::zero() } }
         Matrix(c)
@@ -123,7 +125,7 @@ impl<A: Copy + Zero, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Zero
 
 impl<A: Copy + Neg, M: ArrayLength<A> + ArrayLength<A::Output>, N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<A::Output, M>>> Neg for Matrix<A, M, N> {
     type Output = Matrix<A::Output, M, N>;
-    fn neg(self) -> Self::Output {
+    #[inline] fn neg(self) -> Self::Output {
         let Matrix(a) = self;
         let mut c: GenericArray<GenericArray<A::Output, M>, N> = unsafe { mem::uninitialized() };
         for i in 0..N::to_usize() { for j in 0..M::to_usize() { c[i][j] = a[i][j].neg() } }
@@ -135,7 +137,7 @@ impl<B: Copy, A: Copy + Add<B>,
      M: ArrayLength<A> + ArrayLength<B> + ArrayLength<A::Output>,
      N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<A::Output, M>>> Add<Matrix<B, M, N>> for Matrix<A, M, N> {
     type Output = Matrix<A::Output, M, N>;
-    fn add(self, Matrix(b): Matrix<B, M, N>) -> Self::Output {
+    #[inline] fn add(self, Matrix(b): Matrix<B, M, N>) -> Self::Output {
         let Matrix(a) = self;
         let mut c: GenericArray<GenericArray<A::Output, M>, N> = unsafe { mem::uninitialized() };
         for i in 0..N::to_usize() { for j in 0..M::to_usize() { c[i][j] = a[i][j] + b[i][j] } }
@@ -146,7 +148,7 @@ impl<B: Copy, A: Copy + Add<B>,
 impl<B: Copy, A: Copy + AddAssign<B>,
      M: ArrayLength<A> + ArrayLength<B>,
      N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<B, M>>> AddAssign<Matrix<B, M, N>> for Matrix<A, M, N> {
-    fn add_assign(&mut self, Matrix(b): Matrix<B, M, N>) {
+    #[inline] fn add_assign(&mut self, Matrix(b): Matrix<B, M, N>) {
         let &mut Matrix(ref mut a) = self;
         for i in 0..N::to_usize() { for j in 0..M::to_usize() { a[i][j] += b[i][j] } }
     }
@@ -156,7 +158,7 @@ impl<B: Copy, A: Copy + Sub<B>,
      M: ArrayLength<A> + ArrayLength<B> + ArrayLength<A::Output>,
      N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<A::Output, M>>> Sub<Matrix<B, M, N>> for Matrix<A, M, N> {
     type Output = Matrix<A::Output, M, N>;
-    fn sub(self, Matrix(b): Matrix<B, M, N>) -> Self::Output {
+    #[inline] fn sub(self, Matrix(b): Matrix<B, M, N>) -> Self::Output {
         let Matrix(a) = self;
         let mut c: GenericArray<GenericArray<A::Output, M>, N> = unsafe { mem::uninitialized() };
         for i in 0..N::to_usize() { for j in 0..M::to_usize() { c[i][j] = a[i][j] - b[i][j] } }
@@ -167,14 +169,14 @@ impl<B: Copy, A: Copy + Sub<B>,
 impl<B: Copy, A: Copy + SubAssign<B>,
      M: ArrayLength<A> + ArrayLength<B>,
      N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<B, M>>> SubAssign<Matrix<B, M, N>> for Matrix<A, M, N> {
-    fn sub_assign(&mut self, Matrix(b): Matrix<B, M, N>) {
+    #[inline] fn sub_assign(&mut self, Matrix(b): Matrix<B, M, N>) {
         let &mut Matrix(ref mut a) = self;
         for i in 0..N::to_usize() { for j in 0..M::to_usize() { a[i][j] -= b[i][j] } }
     }
 }
 
 impl<A: Copy + Zero + One, N: ArrayLength<A> + ArrayLength<GenericArray<A, N>>> One for Matrix<A, N, N> {
-    fn one() -> Self {
+    #[inline] fn one() -> Self {
         let mut c: GenericArray<GenericArray<A, N>, N> = unsafe { mem::uninitialized() };
         for i in 0..N::to_usize() { for j in 0..N::to_usize() { c[i][j] = if i == j { A::one() } else { A::zero() } } }
         Matrix(c)
@@ -186,7 +188,7 @@ impl<B: Copy, A: Copy + Mul<B>,
      M: ArrayLength<A> + ArrayLength<A::Output>,
      N: ArrayLength<GenericArray<A::Output, M>> + ArrayLength<GenericArray<B, K>>> Mul<Matrix<B, K, N>> for Matrix<A, M, K> where A::Output: Zero + AddAssign {
     type Output = Matrix<A::Output, M, N>;
-    fn mul(self, Matrix(b): Matrix<B, K, N>) -> Self::Output {
+    #[inline] fn mul(self, Matrix(b): Matrix<B, K, N>) -> Self::Output {
         let Matrix(a) = self;
         let mut c: GenericArray<GenericArray<A::Output, M>, N> = unsafe { mem::uninitialized() };
         for i in 0..N::to_usize() {
