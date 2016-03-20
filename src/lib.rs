@@ -15,6 +15,7 @@ mod linea_glium;
 #[cfg(feature = "glium")]
 pub use linea_glium::*;
 
+use core::fmt::Debug;
 use core::mem;
 use core::num::*;
 use core::ops::*;
@@ -101,6 +102,10 @@ impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLengt
     }
 }
 
+impl<A: Debug, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Debug for Matrix<A, M, N> {
+    #[inline] fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result { self.0.fmt(fmt) }
+}
+
 impl<A: Clone, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Clone for Matrix<A, M, N> where M::ArrayType: Clone {
     #[inline] fn clone(&self) -> Self {
         unsafe {
@@ -112,6 +117,12 @@ impl<A: Clone, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Clone for 
 }
 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Copy for Matrix<A, M, N> where M::ArrayType: Copy, N::ArrayType: Copy {}
+
+impl<A: PartialEq, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> PartialEq for Matrix<A, M, N> {
+    #[inline] fn eq(&self, &Matrix(ref b): &Self) -> bool { let &Matrix(ref a) = self; a == b }
+}
+
+impl<A: Eq, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Eq for Matrix<A, M, N> {}
 
 impl<B: Copy, A: Copy + MulAssign<B>, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> MulAssign<B> for Matrix<A, M, N> {
     #[inline] fn mul_assign(&mut self, rhs: B) {
