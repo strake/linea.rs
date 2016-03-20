@@ -53,32 +53,30 @@ impl<A: Copy + Zero + AddAssign, N: ArrayLength<A>> Matrix<A, N> where N::ArrayT
     /// Project self onto other.
     #[inline]
     pub fn proj<B: Copy>(self, other: Matrix<B, N>) -> Self
-      where N: ArrayLength<B>, <N as ArrayLength<B>>::ArrayType: Copy,
-            B: Mul, B::Output: Copy + Zero + AddAssign,
-            A: Mul<B>, A::Output: Copy + Zero + AddAssign + Div<B::Output>,
-            <<A as Mul<B>>::Output as Div<B::Output>>::Output: Copy + Mul<B, Output = A>,
-            N: ArrayLength<<<A as Mul<B>>::Output as Div<B::Output>>::Output> { other.scale(dot(self, other)/dot(other, other)) }
+      where N: ArrayLength<B> + ArrayLength<<B as Mul>::Output> + ArrayLength<<<A as Mul<B>>::Output as Div<<B as Mul>::Output>>::Output>, <N as ArrayLength<B>>::ArrayType: Copy,
+            A: Mul<B>, <A as Mul<B>>::Output: Zero + AddAssign + Div<<B as Mul>::Output>,
+            <<A as Mul<B>>::Output as Div<<B as Mul>::Output>>::Output: Copy + Mul<B, Output = A>,
+            B: Mul + Mul<<<A as Mul<B>>::Output as Div<<B as Mul>::Output>>::Output, Output = A>, <B as Mul>::Output: Zero + AddAssign { other.scale(dot(self, other)/dot(other, other)) }
 }
 
 impl<A: Copy + Zero + AddAssign + Sub<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
     /// Reject self from other.
     #[inline]
     pub fn rej<B: Copy>(self, other: Matrix<B, N>) -> Self
-      where N: ArrayLength<B>, <N as ArrayLength<B>>::ArrayType: Copy,
-            B: Mul, B::Output: Copy + Zero + AddAssign,
-            A: Mul<B>, <A as Mul<B>>::Output: Copy + Zero + AddAssign + Div<B::Output>,
-            <<A as Mul<B>>::Output as Div<B::Output>>::Output: Copy + Mul<B, Output = A>,
-            N: ArrayLength<<<A as Mul<B>>::Output as Div<B::Output>>::Output> { self - self.proj(other) }
+      where N: ArrayLength<B> + ArrayLength<<B as Mul>::Output> + ArrayLength<<<A as Mul<B>>::Output as Div<<B as Mul>::Output>>::Output>, <N as ArrayLength<B>>::ArrayType: Copy,
+            A: Mul<B>, <A as Mul<B>>::Output: Zero + AddAssign + Div<<B as Mul>::Output>,
+            <<A as Mul<B>>::Output as Div<<B as Mul>::Output>>::Output: Copy + Mul<B, Output = A>,
+            B: Mul + Mul<<<A as Mul<B>>::Output as Div<<B as Mul>::Output>>::Output, Output = A>, <B as Mul>::Output: Zero + AddAssign { self - self.proj(other) }
 }
 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
     #[inline] pub fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { self.0 }
     #[inline]
-    pub fn scale<B: Copy + Mul<A>>(self, b: B) -> Matrix<B::Output, M, N> where M: ArrayLength<B> + ArrayLength<B::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<B::Output, M>> {
+    pub fn scale<B: Copy>(self, b: B) -> Matrix<A::Output, M, N> where A: Mul<B>, M: ArrayLength<B> + ArrayLength<A::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<A::Output, M>> {
         let Matrix(a) = self;
-        let mut c: GenericArray<GenericArray<B::Output, M>, N> = unsafe { mem::uninitialized() };
-        for (ps, qs) in Iterator::zip(a.iter(), c.iter_mut()) { for (p, q) in Iterator::zip(ps.iter(), qs.iter_mut()) { *q = b**p } }
+        let mut c: GenericArray<GenericArray<A::Output, M>, N> = unsafe { mem::uninitialized() };
+        for (ps, qs) in Iterator::zip(a.iter(), c.iter_mut()) { for (p, q) in Iterator::zip(ps.iter(), qs.iter_mut()) { *q = *p*b } }
         Matrix(c)
     }
 }
