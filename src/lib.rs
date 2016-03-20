@@ -78,17 +78,14 @@ impl<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline]
-    pub fn scale<B: Copy>(self, b: B) -> Matrix<A::Output, M, N> where A: Mul<B>, M: ArrayLength<B> + ArrayLength<A::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<A::Output, M>> {
-        let Matrix(a) = self;
-        let mut c: GenericArray<GenericArray<A::Output, M>, N> = unsafe { mem::uninitialized() };
-        for (ps, qs) in Iterator::zip(a.iter(), c.iter_mut()) { for (p, q) in Iterator::zip(ps.iter(), qs.iter_mut()) { *q = *p*b } }
-        Matrix(c)
-    }
+    pub fn scale<B: Copy>(self, b: B) -> Matrix<A::Output, M, N> where A: Mul<B>, A::Output: Copy, M: ArrayLength<A::Output>, N: ArrayLength<GenericArray<A::Output, M>> { self.map(|a| a*b) }
     #[inline]
-    pub fn unscale<B: Copy>(self, b: B) -> Matrix<A::Output, M, N> where A: Div<B>, M: ArrayLength<B> + ArrayLength<A::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<A::Output, M>> {
+    pub fn unscale<B: Copy>(self, b: B) -> Matrix<A::Output, M, N> where A: Div<B>, A::Output: Copy, M: ArrayLength<A::Output>, N: ArrayLength<GenericArray<A::Output, M>> { self.map(|a| a/b) }
+    #[inline]
+    pub fn map<B: Copy, F: FnMut(A) -> B>(self, mut f: F) -> Matrix<B, M, N> where M: ArrayLength<B>, N: ArrayLength<GenericArray<B, M>> {
         let Matrix(a) = self;
-        let mut c: GenericArray<GenericArray<A::Output, M>, N> = unsafe { mem::uninitialized() };
-        for (ps, qs) in Iterator::zip(a.iter(), c.iter_mut()) { for (p, q) in Iterator::zip(ps.iter(), qs.iter_mut()) { *q = *p/b } }
+        let mut c: GenericArray<GenericArray<B, M>, N> = unsafe { mem::uninitialized() };
+        for (ps, qs) in Iterator::zip(a.iter(), c.iter_mut()) { for (p, q) in Iterator::zip(ps.iter(), qs.iter_mut()) { *q = f(*p) } }
         Matrix(c)
     }
 }
