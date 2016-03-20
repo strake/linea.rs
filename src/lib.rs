@@ -1,3 +1,4 @@
+#![feature(const_fn)]
 #![feature(zero_one)]
 
 #![no_std]
@@ -70,9 +71,12 @@ impl<A: Copy + Zero + AddAssign + Sub<Output = A>, N: ArrayLength<A>> Matrix<A, 
             B: Mul + Mul<<<A as Mul<B>>::Output as Div<<B as Mul>::Output>>::Output, Output = A>, <B as Mul>::Output: Zero + AddAssign { self - self.proj(other) }
 }
 
+impl<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
+    #[inline] pub const fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
+    #[inline] pub const fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { self.0 }
+}
+
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
-    #[inline] pub fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
-    #[inline] pub fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { self.0 }
     #[inline]
     pub fn scale<B: Copy>(self, b: B) -> Matrix<A::Output, M, N> where A: Mul<B>, M: ArrayLength<B> + ArrayLength<A::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<A::Output, M>> {
         let Matrix(a) = self;
