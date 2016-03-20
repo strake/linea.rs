@@ -47,16 +47,26 @@ impl<A: Copy + Zero + AddAssign + One + Mul<Output = A> + Div<Output = A>, N: Ar
     pub fn norm(self) -> Self where N::ArrayType: Copy { self.scale(A::one()/dot(self, self)) }
 }
 
-impl<A: Copy + Zero + AddAssign + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
+impl<A: Copy + Zero + AddAssign, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
     /// Project self onto other.
     #[inline]
-    pub fn proj(self, other: Self) -> Self { other.scale(dot(self, other)/dot(other, other)) }
+    pub fn proj<B: Copy>(self, other: Matrix<B, N>) -> Self
+      where N: ArrayLength<B>, <N as ArrayLength<B>>::ArrayType: Copy,
+            B: Mul, B::Output: Copy + Zero + AddAssign,
+            A: Mul<B>, A::Output: Copy + Zero + AddAssign + Div<B::Output>,
+            <<A as Mul<B>>::Output as Div<B::Output>>::Output: Copy + Mul<B, Output = A>,
+            N: ArrayLength<<<A as Mul<B>>::Output as Div<B::Output>>::Output> { other.scale(dot(self, other)/dot(other, other)) }
 }
 
-impl<A: Copy + Zero + AddAssign + Sub<Output = A> + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
+impl<A: Copy + Zero + AddAssign + Sub<Output = A>, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
     /// Reject self from other.
     #[inline]
-    pub fn rej(self, other: Self) -> Self { self - other.proj(self) }
+    pub fn rej<B: Copy>(self, other: Matrix<B, N>) -> Self
+      where N: ArrayLength<B>, <N as ArrayLength<B>>::ArrayType: Copy,
+            B: Mul, B::Output: Copy + Zero + AddAssign,
+            A: Mul<B>, <A as Mul<B>>::Output: Copy + Zero + AddAssign + Div<B::Output>,
+            <<A as Mul<B>>::Output as Div<B::Output>>::Output: Copy + Mul<B, Output = A>,
+            N: ArrayLength<<<A as Mul<B>>::Output as Div<B::Output>>::Output> { self - self.proj(other) }
 }
 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
