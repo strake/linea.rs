@@ -34,11 +34,11 @@ pub fn dot<B: Copy, A: Copy + Mul<B>, N: ArrayLength<A> + ArrayLength<B>>(Matrix
 
 impl<A, N: ArrayLength<A>> Index<usize> for Matrix<A, N> {
     type Output = A;
-    fn index(&self, i: usize) -> &A { let &Matrix(ref a) = self; &a[0][i] }
+    fn index(&self, i: usize) -> &A { &self.0[0][i] }
 }
 
 impl<A, N: ArrayLength<A>> IndexMut<usize> for Matrix<A, N> {
-    fn index_mut(&mut self, i: usize) -> &mut A { let &mut Matrix(ref mut a) = self; &mut a[0][i] }
+    fn index_mut(&mut self, i: usize) -> &mut A { &mut self.0[0][i] }
 }
 
 impl<A: Copy + Zero + AddAssign + One + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> {
@@ -61,7 +61,7 @@ impl<A: Copy + Zero + AddAssign + Sub<Output = A> + Mul<Output = A> + Div<Output
 
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
-    #[inline] pub fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { let Matrix(a) = self; a }
+    #[inline] pub fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { self.0 }
     #[inline]
     pub fn scale<B: Copy + Mul<A>>(self, b: B) -> Matrix<B::Output, M, N> where M: ArrayLength<B> + ArrayLength<B::Output>, N: ArrayLength<GenericArray<B, M>> + ArrayLength<GenericArray<B::Output, M>> {
         let Matrix(a) = self;
@@ -86,10 +86,9 @@ impl<A: Copy, M: ArrayLength<A> + ArrayLength<GenericArray<A, N>>, N: ArrayLengt
 
 impl<A: Clone, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Clone for Matrix<A, M, N> where M::ArrayType: Clone {
     fn clone(&self) -> Self {
-        let &Matrix(ref a) = self;
         unsafe {
             let mut c: GenericArray<GenericArray<A, M>, N> = mem::uninitialized();
-            for i in 0..N::to_usize() { for j in 0..M::to_usize() { ptr::write(&mut c[i][j], a[i][j].clone()) } }
+            for i in 0..N::to_usize() { for j in 0..M::to_usize() { ptr::write(&mut c[i][j], self.0[i][j].clone()) } }
             Matrix(c)
         }
     }
