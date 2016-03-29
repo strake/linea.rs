@@ -11,3 +11,4 @@ documentation = "http://rustdoc.strake.me.uk/linea/index.html"
 typenum = { version = "1.3.*", features = ["no_std"] }
 generic-array = { version = "0.2.1", features = ["no_std"] }
 glium = { version = "0.13.*", optional = true }
+numer = "0.1"

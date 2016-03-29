@@ -4,6 +4,7 @@
 #![no_std]
 
 extern crate generic_array;
+extern crate numer;
 extern crate typenum;
 
 #[cfg(feature = "glium")]
@@ -22,7 +23,8 @@ use core::num::*;
 use core::ops::*;
 use core::ptr;
 use generic_array::*;
-use typenum::consts::U1;
+use numer::Radical;
+use typenum::consts::{ U1, U2 };
 
 /// Rank-2 array of elements of size known at build time
 pub struct Matrix<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>> = U1>(GenericArray<GenericArray<A, M>, N>);
@@ -45,10 +47,10 @@ impl<A, N: ArrayLength<A>> IndexMut<usize> for Matrix<A, N> {
     fn index_mut(&mut self, i: usize) -> &mut A { &mut self.0[0][i] }
 }
 
-impl<A: Copy + Zero + AddAssign + Mul<Output = A> + Div<Output = A>, N: ArrayLength<A>> Matrix<A, N> {
+impl<A: Copy + Zero + AddAssign + Mul + Div, N: ArrayLength<A> + ArrayLength<<A as Div>::Output>> Matrix<A, N> where <A as Mul>::Output: Zero + AddAssign + Radical<U2, Root = A>, <A as Div>::Output: Copy {
     /// Normalize.
     #[inline]
-    pub fn norm(self) -> Self where N::ArrayType: Copy { self.unscale(dot(self, self)) }
+    pub fn norm(self) -> Matrix<<A as Div>::Output, N> where <N as ArrayLength<A>>::ArrayType: Copy { self.unscale(dot(self, self).root()) }
 }
 
 impl<A: Copy + Zero + AddAssign, N: ArrayLength<A>> Matrix<A, N> where N::ArrayType: Copy {
