@@ -148,6 +148,16 @@ impl<B: Copy, A: Copy + MulAssign<B>, M: ArrayLength<A>, N: ArrayLength<GenericA
     }
 }
 
+impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
+    #[inline] pub fn scalar_mul<B: Copy>(self, rhs: B) -> Matrix<A::Output, M, N>
+      where A: Mul<B>, M: ArrayLength<A::Output>, N: ArrayLength<GenericArray<A::Output, M>> {
+        let Matrix(a) = self;
+        let mut c: GenericArray<GenericArray<_, M>, N> = unsafe { mem::uninitialized() };
+        for i in 0..N::to_usize() { for j in 0..M::to_usize() { c[i][j] = a[i][j].mul(rhs) } }
+        Matrix(c)
+    }
+}
+
 impl<A: Copy + Zero, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Zero for Matrix<A, M, N> {
     #[inline] fn zero() -> Self {
         let mut c: GenericArray<GenericArray<A, M>, N> = unsafe { mem::uninitialized() };
