@@ -4,7 +4,7 @@
 #![no_std]
 
 extern crate generic_array;
-extern crate numer;
+extern crate radical;
 extern crate typenum;
 
 #[cfg(feature = "glium")]
@@ -23,7 +23,7 @@ use core::num::*;
 use core::ops::*;
 use core::ptr;
 use generic_array::*;
-use numer::Radical;
+use radical::Radical;
 use typenum::consts::{ U1, U2 };
 
 /// Rank-2 array of elements of size known at build time
