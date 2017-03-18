@@ -10,5 +10,5 @@ documentation = "https://docs.rs/linea/"
 [dependencies]
 typenum = { version = "1.3", features = ["no_std"] }
 generic-array = { version = "0.2.1", features = ["no_std"] }
-glium = { version = "0.13.*", optional = true }
+glium = { version = "0.13", optional = true }
 radical = "0.1"

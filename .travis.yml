@@ -4,3 +4,5 @@ rust:
 - nightly-2017-01-05
 
 cache: cargo
+
+script: cargo build -v --features "$FEATURES" && cargo test  -v --features "$FEATURES"
