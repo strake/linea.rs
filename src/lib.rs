@@ -78,6 +78,20 @@ impl<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub const fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { self.0 }
 }
 
+impl<A: Copy + Zero, M: ArrayLength<A>> Matrix<A, M> {
+    #[inline]
+    pub fn diag(self) -> Matrix<A, M, M> where M: ArrayLength<GenericArray<A, M>> {
+        let Matrix(a) = self;
+        let mut c: GenericArray<GenericArray<A, M>, M> = unsafe { mem::uninitialized() };
+        for i in 0..M::to_usize() {
+            for j in 0..M::to_usize() {
+                c[i][j] = if i == j { a[0][i] } else { A::zero() };
+            }
+        }
+        Matrix(c)
+    }
+}
+
 impl<A: Copy, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline]
     pub fn scale<B: Copy>(self, b: B) -> Matrix<A::Output, M, N> where A: Mul<B>, A::Output: Copy, M: ArrayLength<A::Output>, N: ArrayLength<GenericArray<A::Output, M>> { self.map(|a| a*b) }
