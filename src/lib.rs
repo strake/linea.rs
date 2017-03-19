@@ -24,6 +24,8 @@ mod linea_glium;
 #[cfg(feature = "glium")]
 pub use linea_glium::*;
 
+pub mod projective;
+
 use core::fmt::Debug;
 use core::mem;
 use core::num::*;
