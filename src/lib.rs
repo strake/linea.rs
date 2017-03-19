@@ -1,7 +1,11 @@
+#![no_std]
+
 #![feature(const_fn)]
 #![feature(zero_one)]
 
-#![no_std]
+#![cfg_attr(test, feature(plugin))]
+
+#![cfg_attr(test, plugin(quickcheck_macros))]
 
 extern crate generic_array;
 extern crate radical;
@@ -9,6 +13,9 @@ extern crate typenum;
 
 #[cfg(feature = "glium")]
 extern crate glium;
+
+#[cfg(any(test, feature = "quickcheck"))]
+extern crate quickcheck;
 
 mod mat;
 
@@ -241,5 +248,46 @@ impl<B: Copy, A: Copy + Mul<B>,
             }
         }
         Matrix(c)
+    }
+}
+
+#[cfg(any(test, feature = "quickcheck"))]
+use quickcheck::*;
+
+#[cfg(any(test, feature = "quickcheck"))]
+impl<A: Copy + Arbitrary, M, N> Arbitrary for Matrix<A, M, N>
+  where M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>,
+        M::ArrayType: Clone, N::ArrayType: Send,
+        Matrix<A, M, N>: 'static {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let mut c: GenericArray<GenericArray<A, M>, N> = unsafe { mem::uninitialized() };
+        for i in 0..N::to_usize() {
+            for j in 0..M::to_usize() {
+                c[i][j] = A::arbitrary(g);
+            }
+        }
+        Matrix(c)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use core::num::Wrapping;
+    use typenum::consts::*;
+
+    use super::*;
+
+    fn test_multiply_transpose<A: Copy, M, N>(a: Matrix<A, M, N>, b: Matrix<A, N, M>) -> bool
+      where A: Mul, A::Output: Copy + PartialEq + Zero + AddAssign,
+            M: ArrayLength<A> + ArrayLength<GenericArray<A, N>> +
+               ArrayLength<A::Output> + ArrayLength<GenericArray<A::Output, M>>,
+            N: ArrayLength<A> + ArrayLength<GenericArray<A, M>>,
+            Matrix<A, M, N>: Copy, Matrix<A, N, M>: Copy {
+        (a*b).transpose() == b.transpose()*a.transpose()
+    }
+    #[quickcheck]
+    fn multiply_transpose_3by4_isize(a: Matrix<isize, U3, U4>,
+                                     b: Matrix<isize, U4, U3>) -> bool {
+        test_multiply_transpose(a, b)
     }
 }
