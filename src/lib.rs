@@ -1,15 +1,18 @@
 #![no_std]
 
 #![feature(const_fn)]
-#![feature(zero_one)]
 
 #![cfg_attr(test, feature(plugin))]
 
 #![cfg_attr(test, plugin(quickcheck_macros))]
 
 extern crate generic_array;
+extern crate idem;
 extern crate radical;
 extern crate typenum;
+
+#[cfg(feature = "dimensioned")]
+extern crate dimensioned as dim;
 
 #[cfg(feature = "glium")]
 extern crate glium;
@@ -28,10 +31,10 @@ pub mod projective;
 
 use core::fmt::Debug;
 use core::mem;
-use core::num::*;
 use core::ops::*;
 use core::ptr;
 use generic_array::*;
+use idem::*;
 use radical::Radical;
 use typenum::consts::{ U1, U2 };
 
@@ -44,6 +47,13 @@ pub fn dot<B: Copy, A: Copy + Mul<B>, N: ArrayLength<A> + ArrayLength<B>>(Matrix
     for i in 0..N::to_usize() { c += a[0][i]*b[0][i] }
     c
 }
+
+/*
+#[inline]
+pub fn cross<A: Copy, N: ArrayLength<GenericArray<A, Add1<N>>>>(vs: Matrix<A, Add1<N>, N>) -> Matrix<A, Add1<N>> where Add1<N>: ArrayLength<A> {
+    
+}
+*/
 
 impl<A, N: ArrayLength<A>> Index<usize> for Matrix<A, N> {
     type Output = A;
@@ -86,6 +96,27 @@ impl<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub const fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
     #[inline] pub const fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { self.0 }
 }
+
+/*
+pub trait Inverse {
+    type Output;
+    fn invert(self) -> Output;
+}
+
+impl<A> Inverse for Matrix<A, U0, U0> {
+    type Output = Self;
+    #{inline]
+    fn invert(self) -> Self { self }
+}
+
+impl<A> Inverse for Matrix<A, U1, U1> where A: Zero {
+    type Output = Option<Self>;
+    #{inline]
+    fn invert(self) -> Option<Self> {
+        if A::zero() == self.0[0][0] { None } else { Some() }
+    }
+}
+*/
 
 impl<A: Copy + Zero, M: ArrayLength<A>> Matrix<A, M> {
     #[inline]
@@ -253,6 +284,26 @@ impl<B: Copy, A: Copy + Mul<B>,
         }
         Matrix(c)
     }
+}
+
+#[cfg(feature = "dimensioned")]
+impl<A: dim::Dimensioned, M, N> dim::Dimensioned for Matrix<A, M, N>
+  where M: ArrayLength<A> + ArrayLength<A::Value>,
+        N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<A::Value, M>> {
+    type Value = Matrix<A::Value, M, N>;
+    type Units = A::Units;
+    #[inline]
+    fn new(a: Self::Value) -> Self { a.map_elements(A::new) }
+    #[inline]
+    fn value_unsafe(&self) -> &Self::Value { unsafe { mem::transmute(self) } }
+}
+
+#[cfg(feature = "dimensioned")]
+impl<A: dim::Dimensionless, M, N> dim::Dimensionless for Matrix<A, M, N>
+  where M: ArrayLength<A> + ArrayLength<A::Value>,
+        N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<A::Value, M>> {
+    #[inline]
+    fn value(&self) -> &Self::Value { unsafe { mem::transmute(self) } }
 }
 
 #[cfg(any(test, feature = "quickcheck"))]
