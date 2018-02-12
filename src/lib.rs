@@ -11,6 +11,9 @@ extern crate idem;
 extern crate radical;
 extern crate typenum;
 
+#[cfg(feature = "dimensioned")]
+extern crate dimensioned as dim;
+
 #[cfg(feature = "glium")]
 extern crate glium;
 
@@ -254,6 +257,26 @@ impl<B: Copy, A: Copy + Mul<B>,
         }
         Matrix(c)
     }
+}
+
+#[cfg(feature = "dimensioned")]
+impl<A: dim::Dimensioned, M, N> dim::Dimensioned for Matrix<A, M, N>
+  where M: ArrayLength<A> + ArrayLength<A::Value>,
+        N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<A::Value, M>> {
+    type Value = Matrix<A::Value, M, N>;
+    type Units = A::Units;
+    #[inline]
+    fn new(a: Self::Value) -> Self { a.map_elements(A::new) }
+    #[inline]
+    fn value_unsafe(&self) -> &Self::Value { unsafe { mem::transmute(self) } }
+}
+
+#[cfg(feature = "dimensioned")]
+impl<A: dim::Dimensionless, M, N> dim::Dimensionless for Matrix<A, M, N>
+  where M: ArrayLength<A> + ArrayLength<A::Value>,
+        N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<A::Value, M>> {
+    #[inline]
+    fn value(&self) -> &Self::Value { unsafe { mem::transmute(self) } }
 }
 
 #[cfg(any(test, feature = "quickcheck"))]
