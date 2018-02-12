@@ -37,6 +37,9 @@ use idem::*;
 use radical::Radical;
 use typenum::consts::{ U1, U2 };
 
+#[doc(hidden)]
+pub use generic_array::GenericArray as __linea_GenericArray;
+
 /// Rank-2 array of elements of size known at build time
 pub struct Matrix<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>> = U1>(GenericArray<GenericArray<A, M>, N>);
 
