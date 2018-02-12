@@ -1,13 +1,13 @@
 #![no_std]
 
 #![feature(const_fn)]
-#![feature(zero_one)]
 
 #![cfg_attr(test, feature(plugin))]
 
 #![cfg_attr(test, plugin(quickcheck_macros))]
 
 extern crate generic_array;
+extern crate idem;
 extern crate radical;
 extern crate typenum;
 
@@ -28,10 +28,10 @@ pub mod projective;
 
 use core::fmt::Debug;
 use core::mem;
-use core::num::*;
 use core::ops::*;
 use core::ptr;
 use generic_array::*;
+use idem::*;
 use radical::Radical;
 use typenum::consts::{ U1, U2 };
 
@@ -40,7 +40,7 @@ pub struct Matrix<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>> = U1>
 
 #[inline]
 pub fn dot<B: Copy, A: Copy + Mul<B>, N: ArrayLength<A> + ArrayLength<B>>(Matrix(a): Matrix<A, N>, Matrix(b): Matrix<B, N>) -> A::Output where A::Output: Zero + AddAssign {
-    let mut c = A::Output::zero();
+    let mut c = A::Output::zero;
     for i in 0..N::to_usize() { c += a[0][i]*b[0][i] }
     c
 }
@@ -94,7 +94,7 @@ impl<A: Copy + Zero, M: ArrayLength<A>> Matrix<A, M> {
         let mut c: GenericArray<GenericArray<A, M>, M> = unsafe { mem::uninitialized() };
         for i in 0..M::to_usize() {
             for j in 0..M::to_usize() {
-                c[i][j] = if i == j { a[0][i] } else { A::zero() };
+                c[i][j] = if i == j { a[0][i] } else { A::zero };
             }
         }
         Matrix(c)
@@ -184,10 +184,10 @@ fn zip_elements<A, B, C, M, N, F: FnMut(A, B) -> C>(Matrix(a): Matrix<A, M, N>,
     Matrix(c)
 }
 
-impl<A: Copy + Zero, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Zero for Matrix<A, M, N> {
-    #[inline] fn zero() -> Self {
+impl<A: Copy + Zero, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
+    #[inline] pub fn zero() -> Self {
         let mut c: GenericArray<GenericArray<A, M>, N> = unsafe { mem::uninitialized() };
-        for i in 0..N::to_usize() { for j in 0..M::to_usize() { c[i][j] = A::zero() } }
+        for i in 0..N::to_usize() { for j in 0..M::to_usize() { c[i][j] = A::zero } }
         Matrix(c)
     }
 }
@@ -229,10 +229,11 @@ impl<B: Copy, A: Copy + SubAssign<B>,
     }
 }
 
-impl<A: Copy + Zero + One, N: ArrayLength<A> + ArrayLength<GenericArray<A, N>>> One for Matrix<A, N, N> {
-    #[inline] fn one() -> Self {
+impl<A: Copy + Zero + One, N: ArrayLength<A> + ArrayLength<GenericArray<A, N>>> 
+Matrix<A, N, N> {
+    #[inline] pub fn one() -> Self {
         let mut c: GenericArray<GenericArray<A, N>, N> = unsafe { mem::uninitialized() };
-        for i in 0..N::to_usize() { for j in 0..N::to_usize() { c[i][j] = if i == j { A::one() } else { A::zero() } } }
+        for i in 0..N::to_usize() { for j in 0..N::to_usize() { c[i][j] = if i == j { A::one } else { A::zero } } }
         Matrix(c)
     }
 }
@@ -247,7 +248,7 @@ impl<B: Copy, A: Copy + Mul<B>,
         let mut c: GenericArray<GenericArray<A::Output, M>, N> = unsafe { mem::uninitialized() };
         for i in 0..N::to_usize() {
             for j in 0..M::to_usize() {
-                c[i][j] = A::Output::zero();
+                c[i][j] = A::Output::zero;
                 for k in 0..K::to_usize() { c[i][j] += a[k][j]*b[i][k] }
             }
         }

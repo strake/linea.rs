@@ -12,11 +12,11 @@ pub fn translate<A: Copy, N>(a: Matrix<A, N>) -> Matrix<A, Add1<N>, Add1<N>>
     for i in 0..N::to_usize() + 1 {
         for j in 0..N::to_usize() + 1 {
             c[i][j] = if i == j {
-                A::one()
+                A::one
             } else if N::to_usize() == i {
                 a[j]
             } else {
-                A::zero()
+                A::zero
             };
         }
     }
@@ -36,9 +36,9 @@ pub fn transform_linear<A: Copy, N>(a: Matrix<A, N, N>) -> Matrix<A, Add1<N>, Ad
             c[i][j] = if i < N::to_usize() && j < N::to_usize() {
                 a[i][j]
             } else if i == j {
-                A::one()
+                A::one
             } else {
-                A::zero()
+                A::zero
             };
         }
     }
