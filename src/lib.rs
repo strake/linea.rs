@@ -3,7 +3,6 @@
 #![feature(const_fn)]
 
 #![cfg_attr(test, feature(plugin))]
-
 #![cfg_attr(test, plugin(quickcheck_macros))]
 
 extern crate generic_array;
