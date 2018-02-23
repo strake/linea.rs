@@ -15,10 +15,12 @@ macro_rules! __linea_impl_comma_sep_length {
 macro_rules! mat {
     [$t:ty: $($x0:expr),*] => ({
         use $crate::__linea_GenericArray as GenericArray;
+        #[allow(unused_unsafe)]
         $crate::Matrix::from_col_major_array(arr![GenericArray<$t, U1>; $(arr![$t; $x0]),*])
     });
     [$t:ty: $($x0:expr),*; $($($x:expr),*);+] => ({
         use $crate::__linea_GenericArray as GenericArray;
+        #[allow(unused_unsafe)]
         $crate::Matrix::from_col_major_array(arr![GenericArray<$t, __linea_impl_comma_sep_length!($($x0),*)>; arr![$t; $($x0),*], $(arr![$t; $($x),*]),*]).transpose()
     });
 }
