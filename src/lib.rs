@@ -1,6 +1,9 @@
 #![no_std]
 
 #![feature(const_fn)]
+#![feature(const_fn_union)]
+#![feature(const_let)]
+#![feature(untagged_unions)]
 
 #![cfg_attr(test, feature(plugin))]
 #![cfg_attr(test, plugin(quickcheck_macros))]
@@ -89,7 +92,12 @@ impl<A: Copy + Zero + AddAssign + Sub<Output = A>, N: ArrayLength<A>> Matrix<A, 
 
 impl<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] pub const fn from_col_major_array(a: GenericArray<GenericArray<A, M>, N>) -> Self { Matrix(a) }
-    #[inline] pub const fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> { self.0 }
+    #[inline] pub const fn to_col_major_array(self) -> GenericArray<GenericArray<A, M>, N> {
+        #[allow(unions_with_drop_fields)]
+        union U<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> { a: Matrix<A, M, N> }
+        let u = U { a: self };
+        unsafe { u.a.0 }
+    }
 }
 
 impl<A: Copy + Zero, M: ArrayLength<A>> Matrix<A, M> {
