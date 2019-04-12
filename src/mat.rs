@@ -7,6 +7,7 @@ macro_rules! __linea_impl_comma_sep_length {
 
 /// Example use:
 /// ```
+/// # #[macro_use] extern crate linea; extern crate typenum; use linea::Matrix; use typenum::consts::*;
 /// let _: Matrix<usize, U2, U2> = mat![usize: 1, 0;
 ///                                            0, 1];
 /// ```
