@@ -17,5 +17,5 @@ quickcheck = { version = "0.6", optional = true }
 radical = "0.1"
 
 [dev-dependencies]
-quickcheck = "0.6"
-quickcheck_macros = "0.6"
+quickcheck = "0.7"
+quickcheck_macros = "0.7"
