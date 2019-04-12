@@ -2,7 +2,6 @@
 
 #![feature(const_fn)]
 #![feature(const_fn_union)]
-#![feature(const_let)]
 #![feature(untagged_unions)]
 
 #![cfg_attr(test, feature(plugin))]
