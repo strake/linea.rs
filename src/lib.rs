@@ -172,13 +172,14 @@ impl<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] fn map_elements<B, F: FnMut(A) -> B>(self, mut f: F) -> Matrix<B, M, N>
       where M: ArrayLength<B>, N: ArrayLength<GenericArray<B, M>> {
         let Matrix(a) = self;
+        let _wrapper = mem::ManuallyDrop::new(a);
         let mut c: GenericArray<GenericArray<B, M>, N> = unsafe { mem::uninitialized() };
         for i in 0..N::to_usize() { for j in 0..M::to_usize() { unsafe {
-            ptr::write(&mut c[i][j], f(ptr::read(&a[i][j])))
+            ptr::write(&mut c[i][j], f(ptr::read(&_wrapper[i][j])))
         } } }
-        mem::forget(a);
         Matrix(c)
     }
+
 }
 
 #[inline]
