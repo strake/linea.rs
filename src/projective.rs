@@ -7,43 +7,39 @@ use super::*;
 pub fn translate<A: Copy, N>(a: Matrix<A, N>) -> Matrix<A, Add1<N>, Add1<N>>
   where A: Zero + One,
         N: Add<B1> + ArrayLength<A>,
-        Add1<N>: ArrayLength<A> + ArrayLength<GenericArray<A, Add1<N>>> {
-    let mut c: Array<Array<A, Add1<N>>, Add1<N>> = unsafe { mem::uninitialized() };
-    for i in 0..N::to_usize() + 1 {
-        for j in 0..N::to_usize() + 1 {
-            c[i][j] = if i == j {
-                A::one
-            } else if N::to_usize() == i {
-                a[j]
-            } else {
-                A::zero
-            };
-        }
-    }
-    Matrix(c)
-}
+        Add1<N>: ArrayLength<A> + ArrayLength<GenericArray<A, Add1<N>>> { unsafe {
+    let mut c = mem::MaybeUninit::<Array<Array<A, Add1<N>>, Add1<N>>>::uninit();
+    for i in 0..N::to_usize() + 1 { for j in 0..N::to_usize() + 1 {
+        ptr::write(&mut c.getMut()[i][j], if i == j {
+            A::one
+        } else if N::to_usize() == i {
+            a[j]
+        } else {
+            A::zero
+        });
+    } }
+    Matrix(c.assume_init())
+} }
 
 /// Homomorphism from GL(N, A) to PGL(N+1, A)
 #[inline]
 pub fn transform_linear<A: Copy, N>(a: Matrix<A, N, N>) -> Matrix<A, Add1<N>, Add1<N>>
   where A: Zero + One,
         N: Add<B1> + ArrayLength<A> + ArrayLength<GenericArray<A, N>>,
-        Add1<N>: ArrayLength<A> + ArrayLength<GenericArray<A, Add1<N>>> {
+        Add1<N>: ArrayLength<A> + ArrayLength<GenericArray<A, Add1<N>>> { unsafe {
     let Matrix(a) = a;
-    let mut c: Array<Array<A, Add1<N>>, Add1<N>> = unsafe { mem::uninitialized() };
-    for i in 0..N::to_usize() + 1 {
-        for j in 0..N::to_usize() + 1 {
-            c[i][j] = if i < N::to_usize() && j < N::to_usize() {
-                a[i][j]
-            } else if i == j {
-                A::one
-            } else {
-                A::zero
-            };
-        }
-    }
-    Matrix(c)
-}
+    let mut c = mem::MaybeUninit::<Array<Array<A, Add1<N>>, Add1<N>>>::uninit();
+    for i in 0..N::to_usize() + 1 { for j in 0..N::to_usize() + 1 {
+        ptr::write(&mut c.getMut()[i][j], if i < N::to_usize() && j < N::to_usize() {
+            a[i][j]
+        } else if i == j {
+            A::one
+        } else {
+            A::zero
+        });
+    } }
+    Matrix(c.assume_init())
+} }
 
 #[cfg(test)]
 mod tests {
