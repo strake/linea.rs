@@ -4,9 +4,6 @@
 #![feature(const_fn_union)]
 #![feature(untagged_unions)]
 
-#![cfg_attr(test, feature(plugin))]
-#![cfg_attr(test, plugin(quickcheck_macros))]
-
 extern crate generic_array;
 extern crate idem;
 extern crate radical;
@@ -20,6 +17,9 @@ extern crate glium;
 
 #[cfg(any(test, feature = "quickcheck"))]
 extern crate quickcheck;
+#[cfg(test)]
+#[macro_use]
+extern crate quickcheck_macros;
 
 mod mat;
 
@@ -309,7 +309,6 @@ impl<A: Copy + Arbitrary, M, N> Arbitrary for Matrix<A, M, N>
 
 #[cfg(test)]
 mod tests {
-    use core::num::Wrapping;
     use typenum::consts::*;
 
     use super::*;
