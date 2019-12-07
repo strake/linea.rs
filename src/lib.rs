@@ -177,11 +177,11 @@ impl<A, M: ArrayLength<A>, N: ArrayLength<GenericArray<A, M>>> Matrix<A, M, N> {
     #[inline] fn map_elements<B, F: FnMut(A) -> B>(self, mut f: F) -> Matrix<B, M, N>
       where M: ArrayLength<B>, N: ArrayLength<GenericArray<B, M>> { unsafe {
         let Matrix(a) = self;
+        let a = mem::ManuallyDrop::new(a);
         let mut c = mem::MaybeUninit::<GenericArray<GenericArray<B, M>, N>>::uninit();
         for i in 0..N::to_usize() { for j in 0..M::to_usize() {
             ptr::write(&mut c.getMut()[i][j], f(ptr::read(&a[i][j])))
         } }
-        mem::forget(a);
         Matrix(c.assume_init())
     } }
 }
@@ -193,11 +193,11 @@ fn zip_elements<A, B, C, M, N, F: FnMut(A, B) -> C>(Matrix(a): Matrix<A, M, N>,
   where M: ArrayLength<A> + ArrayLength<B> + ArrayLength<C>,
         N: ArrayLength<GenericArray<A, M>> + ArrayLength<GenericArray<B, M>> +
            ArrayLength<GenericArray<C, M>> { unsafe {
+    let (a, b) = (mem::ManuallyDrop::new(a), mem::ManuallyDrop::new(b));
     let mut c = mem::MaybeUninit::<GenericArray<GenericArray<C, M>, N>>::uninit();
     for i in 0..N::to_usize() { for j in 0..M::to_usize() {
         ptr::write(&mut c.getMut()[i][j], f(ptr::read(&a[i][j]), ptr::read(&b[i][j])))
     } }
-    mem::forget((a, b));
     Matrix(c.assume_init())
 } }
 
